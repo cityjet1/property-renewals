@@ -153,7 +153,7 @@
             if (!dated.length) h += '<div class="note">No dated jobs yet.</div>';
             dated.slice(0, 10).forEach(function (j) { h += '<div class="job"><div class="nm">' + esc(j.job_name) + '</div><div class="note">' + esc(j.property) + '</div><div>' + chip(j) + '</div></div>'; });
             h += '</div>';
-            h += '<div class="callout">Dates save straight back to the renewals sheet in your Dropbox (Apps &gt; tim-property-renewals). Edit here to save immediately. After editing the sheet elsewhere, return to this tab or tap Refresh sheet. To update WhatsApp reminders, tap the button below and send the message to Instinct. Changing a date alone does not move reminders.</div>';
+            h += '<div class="callout">Dates save straight back to the renewals sheet in your Dropbox (Apps &gt; tim-property-renewals). Edit here to save immediately. After editing the sheet elsewhere, tap Refresh sheet. To update WhatsApp reminders, tap the button below and send the message to Instinct. Changing a date alone does not move reminders.</div>';
             h += '<div class="row" style="margin-top:12px"><a href="' + WA_LINK + '"><button class="primary">Update my reminders</button></a> <button onclick="pj.signout()">Sign out of Dropbox</button></div>';
         } else {
             var props = {};
