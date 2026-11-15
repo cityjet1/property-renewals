@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Your property jobs</title>
+<style>
+:root { --ink:#2b2620; --soft:#6b6357; --line:#e5dfd4; --bg:#f7f4ee; --card:#fff; --accent:#166b52; --warn:#8a5a00; }
+* { box-sizing: border-box; }
+body { margin:0; font-family: Georgia, 'Times New Roman', serif; background:var(--bg); color:var(--ink); }
+.wrap { max-width: 640px; margin: 0 auto; padding: 20px 16px 60px; }
+h1 { font-size: 26px; font-weight: 600; margin: 8px 0 2px; }
+.brand { display:flex; flex-wrap:wrap; align-items:flex-start; justify-content:space-between; gap:14px; }
+.brand .logo { width:288px; height:auto; border-radius:12px; margin-top:4px; margin-left:auto; box-shadow:0 1px 4px rgba(43,38,32,.18); }
+.sub { color: var(--accent); font-size: 14px; margin: 0 0 12px; }
+.intro { color: var(--soft); font-size: 15px; line-height: 1.45; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; margin: 14px 0; }
+button { font-family: inherit; font-size: 15px; border-radius: 9px; border: 1px solid var(--line); background:#fff; color:var(--ink); padding: 9px 14px; cursor: pointer; }
+button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+button:disabled { opacity: .45; cursor: default; }
+.prop { border-top: 1px solid var(--line); }
+.prop summary { cursor: pointer; padding: 12px 2px; font-size: 16px; list-style: none; }
+.prop summary::-webkit-details-marker { display:none; }
+.prop summary .cnt { color: var(--soft); font-size: 13px; }
+.prop summary .pn { font-weight:600; }
+.job { border-top: 1px dashed var(--line); padding: 10px 2px; font-size: 14.5px; }
+.job .nm { font-weight: 600; }
+.job .note { color: var(--soft); font-size: 13px; margin: 3px 0; line-height: 1.4; }
+.chip { display:inline-block; font-size: 12.5px; border-radius: 999px; padding: 3px 10px; margin: 4px 6px 0 0; background:#efe9dd; color:var(--soft); }
+.chip.due { background:#e3efe9; color:var(--accent); }
+.chip.passed { background:#f3e7d3; color:var(--warn); }
+.chip.done { background:#e8e4da; }
+.job .row { margin-top: 6px; display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+.job input[type=date], .job input[type=text] { font-family: inherit; font-size: 14px; padding: 6px 8px; border:1px solid var(--line); border-radius:8px; }
+.status { font-size: 13.5px; color: var(--soft); margin: 10px 0; }
+.callout { background:#f3ecdf; border-radius:10px; padding:12px 14px; font-size:14px; line-height:1.45; }
+.err { background:#f9e8e4; color:#8a2d1d; }
+a { color: var(--accent); }
+.tabs { display:flex; gap:10px; margin:14px 0; }
+.tabs button.on { background:var(--ink); color:#fff; border-color:var(--ink); }
+.foot { color:var(--soft); font-size:12.5px; margin-top:22px; line-height:1.5; }
+.hidden { display:none; }
+</style>
+</head>
+<body>
+<div class="wrap" id="app"><p class="status">Loading…</p></div>
+<script src="dropbox-sync.js?v=2"></script>
+<script src="app.js?v=12"></script>
+</body>
+</html>
