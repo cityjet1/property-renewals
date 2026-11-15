@@ -96,6 +96,7 @@
             j.due = j._undo.due; j.done = j._undo.done; delete j._undo; save();
         },
         setDue: function (i, v) { S.rows[i].due = v; delete S.rows[i]._undo; save(); },
+        setNote: function (i, v) { S.rows[i].note = v; save(); },
         setDone: function (i, v) { S.rows[i].done = v; delete S.rows[i]._undo; save(); },
         del: function (i) { S.rows.splice(i, 1); save(); },
         add: function (pid) {
@@ -131,7 +132,7 @@
         h += '<label>due <input type="date" value="' + esc(j.due) + '" onchange="pj.setDue(' + i + ',this.value)"></label>';
         h += '<label>done <input type="date" value="' + esc(j.done) + '" onchange="pj.setDone(' + i + ',this.value)"></label>';
         if (j.job_id.indexOf('custom-') === 0) h += '<button onclick="pj.del(' + i + ')">Remove</button>';
-        h += '</div></div>';
+        h += '</div><label class="note">Notes <textarea style="display:block;box-sizing:border-box;width:100%;min-height:60px;margin-top:6px" onchange="pj.setNote(' + i + ',this.value)">' + esc(j.note) + '</textarea></label></div>';
         return h;
     }
     function renderSetupNeeded() {
@@ -185,6 +186,10 @@
     // Refresh only on the user's return to the tab, not by background polling.
     document.addEventListener('visibilitychange', function () {
         if (!document.hidden && DbxSync.isConnected() && !S.saving) load(false);
+    });
+
+    window.addEventListener('focus', function () {
+        if (DbxSync.isConnected() && !S.saving) load(false);
     });
 
     // ---------- boot ----------
