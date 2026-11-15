@@ -94,21 +94,36 @@
         tab: function (t) { S.tab = t; render(); },
         done: function (i) {
             var j = S.rows[i];
+            if (j.job_id === 'insurance' && j.due) {
+                // Tim's rule (15 Nov 2026): propose the next date one calendar year on; only Confirm saves.
+                j._pending = { due: addOneYear(j.due) };
+                S.msg = '';
+                render();
+                return;
+            }
             j._undo = { due: j.due, done: j.done };
             j.done = todayISO();
             if (j.job_id === 'insurance') {
-                // Tim's rule (15 Nov 2026): Done on insurance rolls the recorded date forward one year.
-                if (j.due) {
-                    j.due = addOneYear(j.due);
-                    S.msg = 'Insurance marked done today. Next date set one year on from the previous date: ' + fmt(j.due) + '.';
-                } else {
-                    S.msg = 'Insurance marked done today. No date was recorded, so nothing rolled forward - set the next date manually.';
-                }
+                S.msg = 'Insurance marked done today. No date was recorded, so nothing rolled forward - set the next date manually.';
             } else {
                 j.due = '';
                 S.msg = 'Marked done today. Set the next due date from the new certificate.';
             }
             save();
+        },
+        confirmRenew: function (i) {
+            var j = S.rows[i]; if (!j._pending) return;
+            j._undo = { due: j.due, done: j.done };
+            j.due = j._pending.due; delete j._pending;
+            j.done = todayISO();
+            S.msg = 'Insurance renewed. Next date saved as ' + fmt(j.due) + '.';
+            save();
+        },
+        cancelRenew: function (i) {
+            var j = S.rows[i]; if (!j._pending) return;
+            delete j._pending;
+            S.msg = 'Renewal cancelled - nothing changed in the sheet.';
+            render();
         },
         undo: function (i) {
             var j = S.rows[i]; if (!j._undo) return;
@@ -143,7 +158,12 @@
         var j = S.rows[i];
         var h = '<div class="job"><div class="nm">' + esc(j.job_name) + '</div>';
         if (j.note) h += '<div class="note">' + esc(j.note) + '</div>';
-        h += '<div>' + chip(j) + '</div><div class="row">';
+        h += '<div>' + chip(j) + '</div>';
+        if (j._pending) {
+            h += '<div class="card" style="margin:6px 0">Mark done today and set the next date to <strong>' + esc(fmt(j._pending.due)) + '</strong> (one calendar year on)? This overwrites the recorded date in your Dropbox sheet only if you confirm.'
+                + '<div class="row" style="margin-top:6px"><button class="primary" onclick="pj.confirmRenew(' + i + ')">Confirm new date</button> <button onclick="pj.cancelRenew(' + i + ')">Cancel</button></div></div>';
+        }
+        h += '<div class="row">';
         if (!j.done || j.due || j._undo == null) {
             if (!j.done) h += '<button onclick="pj.done(' + i + ')">Done</button>';
         }
