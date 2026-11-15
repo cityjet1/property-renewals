@@ -117,7 +117,7 @@
         var st = status(j);
         if (st === 'done') return '<span class="chip done">Done ' + esc(fmt(j.done)) + (j._undo ? '' : '') + '</span>';
         if (st === 'passed') return '<span class="chip passed">Date passed ' + esc(fmt(j.due)) + ' - not proof anything is missing</span>';
-        if (st === 'dated') return '<span class="chip due">Due ' + esc(fmt(j.due)) + '</span>';
+        if (st === 'dated') return '<span class="chip due">Recorded ' + esc(fmt(j.due)) + '</span>';
         return '<span class="chip">No date set</span>';
     }
     function jobHtml(i) {
@@ -180,7 +180,7 @@
             + '<div class="card"><p class="intro">Your renewal dates and jobs live in a sheet in your own Dropbox. This page reads and writes that sheet only after you connect - nothing is stored in the page itself.</p>'
             + '<p class="intro">Tap Connect, approve Dropbox access (it can only reach the app\'s own folder), and your jobs appear here. Edits save straight back to the sheet.</p>'
             + '<button class="primary" onclick="pj.connect()">Connect Dropbox</button></div>'
-            + '<div class="foot">Sign-in lasts until you close or reload this tab; connecting again is one tap.</div>';
+            + '<div class="foot">Reconnect after closing or reloading; Dropbox may ask you to sign in.</div>';
     }
 
     // Refresh only on the user's return to the tab, not by background polling.
