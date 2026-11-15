@@ -74,7 +74,7 @@
         DbxSync.readMaster().then(function (res) {
             if (res.status === 'ok') {
                 S.rows = csvParse(res.text); S.rev = res.rev;
-                if (afterConflict) S.msg = 'Refreshed from the sheet. If your change is missing, make it again.';
+                S.msg = afterConflict ? 'Refreshed from the sheet. If your change is missing, make it again.' : 'Up to date with your Dropbox sheet.';
                 render();
             } else if (res.status === 'missing') {
                 S.msg = ''; renderSetupNeeded();
@@ -106,6 +106,7 @@
             el.value = ''; save();
         },
         connect: function () { DbxSync.connect(); },
+        refresh: function () { if (!S.saving) { S.msg = 'Reading your Dropbox sheet...'; render(); load(false); } },
         signout: function () { location.reload(); }
     };
 
@@ -142,8 +143,8 @@
         var passed = S.rows.filter(function (j) { return status(j) === 'passed'; });
         var unset = S.rows.filter(function (j) { return status(j) === 'unset'; });
         var h = '<h1>Your property jobs</h1><p class="sub">Live from your Dropbox sheet' + (S.connectedAs ? ' - ' + esc(S.connectedAs) : '') + '</p>';
-        h += '<p class="status">' + (S.saving ? 'Saving…' : esc(S.msg || 'Up to date.')) + '</p>';
-        h += '<div class="tabs"><button class="' + (S.tab === 'overview' ? 'on' : '') + '" onclick="pj.tab(\'overview\')">Overview</button><button class="' + (S.tab === 'properties' ? 'on' : '') + '" onclick="pj.tab(\'properties\')">Properties</button></div>';
+        h += '<p class="status">' + (S.saving ? 'Saving…' : esc(S.msg || 'Up to date with your Dropbox sheet.')) + '</p>';
+        h += '<div class="tabs"><button onclick="pj.refresh()">Refresh sheet</button><button class="' + (S.tab === 'overview' ? 'on' : '') + '" onclick="pj.tab(\'overview\')">Overview</button><button class="' + (S.tab === 'properties' ? 'on' : '') + '" onclick="pj.tab(\'properties\')">Properties</button></div>';
         if (S.tab === 'overview') {
             h += '<div class="card"><strong>' + dated.length + '</strong> dated &nbsp; <strong>' + passed.length + '</strong> date passed &nbsp; <strong>' + unset.length + '</strong> need a date';
             h += '<div class="note" style="margin-top:6px">A passed date only means the date on the job has gone by - it does not prove a certificate or check is missing.</div></div>';
@@ -151,7 +152,7 @@
             if (!dated.length) h += '<div class="note">No dated jobs yet.</div>';
             dated.slice(0, 10).forEach(function (j) { h += '<div class="job"><div class="nm">' + esc(j.job_name) + '</div><div class="note">' + esc(j.property) + '</div><div>' + chip(j) + '</div></div>'; });
             h += '</div>';
-            h += '<div class="callout">Dates save straight back to the renewals sheet in your Dropbox (Apps &gt; tim-property-renewals). Edit there or here - both update. Reminders on WhatsApp move when you tap the button below or tell Instinct.</div>';
+            h += '<div class="callout">Dates save straight back to the renewals sheet in your Dropbox (Apps &gt; tim-property-renewals). Edit here to save immediately. After editing the sheet elsewhere, return to this tab or tap Refresh sheet. To update WhatsApp reminders, tap the button below and send the message to Instinct. Changing a date alone does not move reminders.</div>';
             h += '<div class="row" style="margin-top:12px"><a href="' + WA_LINK + '"><button class="primary">Update my reminders</button></a> <button onclick="pj.signout()">Sign out of Dropbox</button></div>';
         } else {
             var props = {};
@@ -180,6 +181,11 @@
             + '<button class="primary" onclick="pj.connect()">Connect Dropbox</button></div>'
             + '<div class="foot">Sign-in lasts until you close or reload this tab; connecting again is one tap.</div>';
     }
+
+    // Refresh only on the user's return to the tab, not by background polling.
+    document.addEventListener('visibilitychange', function () {
+        if (!document.hidden && DbxSync.isConnected() && !S.saving) load(false);
+    });
 
     // ---------- boot ----------
     var r = DbxSync.handleReturn(function (name) {
