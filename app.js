@@ -42,6 +42,13 @@
     }
 
     // ---------- dates ----------
+    function addOneYear(iso) {
+        // Calendar-year rollover from the existing date. Leap day clamps to 28 Feb.
+        var p = iso.split('-'), y = +p[0], m = +p[1], d = +p[2];
+        var nd = new Date(Date.UTC(y + 1, m - 1, d));
+        if (nd.getUTCMonth() !== m - 1) nd = new Date(Date.UTC(y + 1, m, 0));
+        return nd.getUTCFullYear() + '-' + String(nd.getUTCMonth() + 1).padStart(2, '0') + '-' + String(nd.getUTCDate()).padStart(2, '0');
+    }
     function todayISO() {
         var d = new Date();
         return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
@@ -88,8 +95,20 @@
         done: function (i) {
             var j = S.rows[i];
             j._undo = { due: j.due, done: j.done };
-            j.done = todayISO(); j.due = '';
-            S.msg = 'Marked done today. Set the next due date from the new certificate.'; save();
+            j.done = todayISO();
+            if (j.job_id === 'insurance') {
+                // Tim's rule (15 Nov 2026): Done on insurance rolls the recorded date forward one year.
+                if (j.due) {
+                    j.due = addOneYear(j.due);
+                    S.msg = 'Insurance marked done today. Next date set one year on from the previous date: ' + fmt(j.due) + '.';
+                } else {
+                    S.msg = 'Insurance marked done today. No date was recorded, so nothing rolled forward - set the next date manually.';
+                }
+            } else {
+                j.due = '';
+                S.msg = 'Marked done today. Set the next due date from the new certificate.';
+            }
+            save();
         },
         undo: function (i) {
             var j = S.rows[i]; if (!j._undo) return;
