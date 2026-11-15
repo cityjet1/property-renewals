@@ -53,7 +53,7 @@ var DbxSync = (function () {
         if (!code && !err) return 'idle';
         // Scrub the callback URL before anything else happens.
         history.replaceState(null, '', REDIRECT);
-        if (err) { onError('Dropbox sign-in was cancelled or failed (' + err + ').'); return 'returned'; }
+        if (err) { sessionStorage.removeItem('dbx_pkce'); onError('Dropbox sign-in was cancelled or failed (' + err + ').'); return 'returned'; }
         var stored = null;
         try { stored = JSON.parse(sessionStorage.getItem('dbx_pkce') || 'null'); } catch (e) { /* ignore */ }
         sessionStorage.removeItem('dbx_pkce'); // transient only, gone now either way
