@@ -201,12 +201,14 @@
                 var p = props[pid];
                 if (pid === 'PORTFOLIO') return;
                 var open = p.items.filter(function (i) { return status(S.rows[i]) !== 'done'; }).length;
-                h += '<details class="prop"><summary>' + esc(p.name) + ' <span class="cnt">' + open + ' open</span></summary>';
+                var keepOpen = p.items.some(function (i) { return !!S.rows[i]._pending; });
+                h += '<details class="prop"' + (keepOpen ? ' open' : '') + '><summary>' + esc(p.name) + ' <span class="cnt">' + open + ' open</span></summary>';
                 p.items.forEach(function (i) { h += jobHtml(i); });
                 h += '<div class="job"><div class="row"><input type="text" id="newjob-' + esc(pid) + '" placeholder="Add your own job"> <button onclick="pj.add(\'' + esc(pid) + '\')">Add</button></div></div>';
                 h += '</details>';
             });
-            h += '<details class="prop"><summary>Whole portfolio</summary>';
+            var pfOpen = (props.PORTFOLIO ? props.PORTFOLIO.items : []).some(function (i) { return !!S.rows[i]._pending; });
+            h += '<details class="prop"' + (pfOpen ? ' open' : '') + '><summary>Whole portfolio</summary>';
             (props.PORTFOLIO ? props.PORTFOLIO.items : []).forEach(function (i) { h += jobHtml(i); });
             h += '</details>';
         }
