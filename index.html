@@ -36,7 +36,7 @@ button:disabled { opacity: .45; cursor: default; }
 .callout { background:#f3ecdf; border-radius:10px; padding:12px 14px; font-size:14px; line-height:1.45; }
 .err { background:#f9e8e4; color:#8a2d1d; }
 a { color: var(--accent); }
-.tabs { display:flex; gap:10px; margin:14px 0; }
+.tabs { display:flex; flex-wrap:wrap; gap:10px; margin:14px 0; }
 .tabs button.on { background:var(--ink); color:#fff; border-color:var(--ink); }
 .foot { color:var(--soft); font-size:12.5px; margin-top:22px; line-height:1.5; }
 .hidden { display:none; }
@@ -46,6 +46,8 @@ a { color: var(--accent); }
 <div class="wrap" id="app"><p class="status">Loading…</p></div>
 <script src="dropbox-sync.js?v=2"></script>
 <script src="app.js?v=16"></script>
+<script src="1-xlsx.full.min.js?v=0.18.5"></script>
+<script src="https://www.dropbox.com/static/api/2/dropins.js" id="dropboxjs" data-app-key="zcbbiafvvnsfsj9"></script>
+<script src="2-master-import.js?v=1"></script>
 </body>
 </html>
-
