@@ -197,7 +197,11 @@
 
     // ---------- render ----------
     function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;'); }
-    function chip(j) {
+    function flagChip(j) {
+        return (j.note && /^TO CONFIRM/.test(j.note)) ? '<span class="chip passed">To confirm - not verified</span>' : '';
+    }
+    function chip(j) { return chip0(j) + flagChip(j); }
+    function chip0(j) {
         var st = status(j);
         if (st === 'na') return '<span class="chip done">Not applicable</span>';
         if (st === 'done') return '<span class="chip done">Done ' + esc(fmt(j.done)) + (j._undo ? '' : '') + '</span>';
