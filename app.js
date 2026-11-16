@@ -35,7 +35,7 @@
         return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v;
     }
     function csvSerialize(rows) {
-        var head = ['property_id', 'property', 'job_id', 'job_name', 'recur_months', 'due', 'done', 'note', 'na'];
+        var head = ['property_id', 'property', 'job_id', 'job_name', 'recur_months', 'due', 'done', 'note', 'na', 'owner'];
         var lines = [head.join(',')];
         rows.forEach(function (r) { lines.push(head.map(function (h) { return csvField(r[h]); }).join(',')); });
         return lines.join('\n') + '\n';
@@ -161,6 +161,35 @@
             S.rows.push({ property_id: pid, property: prop ? prop.property : pid, job_id: 'custom-' + Date.now(), job_name: name, recur_months: 0, due: '', done: '', note: '' });
             el.value = ''; save();
         },
+        setOwner: function (pid, v) {
+            v = (v || '').trim();
+            S.rows.forEach(function (r) { if (r.property_id === pid) r.owner = v; });
+            save();
+        },
+        addProperty: function () {
+            var g = function (id) { var e = document.getElementById(id); return e ? (e.value || '').trim() : ''; };
+            var name = g('np-name'); if (!name) { S.msg = 'Type the property address first.'; render(); return; }
+            var pid = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+            if (S.rows.some(function (r) { return r.property_id === pid; })) { S.msg = 'That property is already in the list.'; render(); return; }
+            var owner = g('np-owner');
+            var defs = [
+                ['gas', 'Gas safety certificate (CP12)', 12, 'np-gas', 'Every 12 months; tenant copy within 28 days. Date is certificate expiry.'],
+                ['eicr', 'Electrical safety report (EICR)', 60, 'np-eicr', 'At least every 5 years or sooner if the report says. Date is expiry.'],
+                ['epc', 'EPC in date', 120, 'np-epc', 'EPC lasts 10 years; must be E or above.'],
+                ['insurance', 'Insurance renewal', 12, 'np-insurance', 'Sheet "exp" date - check against the policy schedule.'],
+                ['mortgage-fix', 'Mortgage fixed deal ends', 0, 'np-mortgage', 'Fixed-rate end date.']
+            ];
+            for (var k = 0; k < defs.length; k++) {
+                var v = g(defs[k][3]);
+                if (!plausibleDate(v)) { S.msg = 'A date for ' + defs[k][1] + ' does not look right - nothing was saved.'; render(); return; }
+            }
+            defs.forEach(function (d) {
+                var v = g(d[3]);
+                S.rows.push({ property_id: pid, property: name, job_id: d[0], job_name: d[1], recur_months: d[2], due: v, done: '',
+                    note: d[4] + (v ? '' : ' Not recorded yet - add the date when known.'), na: '', owner: owner });
+            });
+            S.tab = 'properties'; S.msg = 'Added ' + name + '.'; save();
+        },
         connect: function () { DbxSync.connect(); },
         refresh: function () { if (!S.saving) { S.msg = 'Reading your Dropbox sheet...'; render(); load(false); } },
         signout: function () { location.reload(); }
@@ -277,11 +306,20 @@
                 var keepOpen = p.items.some(function (i) { return !!S.rows[i]._pending; });
                 var ordered = sortItems(p.items);
                 var nx = ordered.length && status(S.rows[ordered[0]]) !== 'done' ? S.rows[ordered[0]] : null;
-                h += '<details class="prop"' + (keepOpen ? ' open' : '') + '><summary><span class="pn">' + esc(p.name) + '</span> <span class="cnt">' + open + ' open' + (nx ? ' - next: ' + esc(nx.job_name) + (nx.due ? ' ' + esc(fmt(nx.due)) : '') : '') + '</span></summary>';
+                var own = (S.rows[p.items[0]].owner || '');
+                h += '<details class="prop"' + (keepOpen ? ' open' : '') + '><summary><span class="pn">' + esc(p.name) + '</span> ' + (own ? '<span class="cnt">Owner: ' + esc(own) + ' - </span>' : '') + '<span class="cnt">' + open + ' open' + (nx ? ' - next: ' + esc(nx.job_name) + (nx.due ? ' ' + esc(fmt(nx.due)) : '') : '') + '</span></summary>';
                 ordered.forEach(function (i) { h += jobHtml(i); });
+                h += '<div class="job"><div class="row"><label>Owner <input type="text" value="' + esc(own) + '" placeholder="not recorded" onchange="pj.setOwner(\'' + esc(pid) + '\', this.value)"></label></div></div>';
                 h += '<div class="job"><div class="row"><input type="text" id="newjob-' + esc(pid) + '" placeholder="Add your own job"> <button onclick="pj.add(\'' + esc(pid) + '\')">Add</button></div></div>';
                 h += '</details>';
             });
+            h += '<details class="prop"><summary><span class="pn">Add a property</span></summary><div class="job">'
+                + '<div class="row"><input type="text" id="np-name" placeholder="Address, e.g. 13 Peel Road"> <input type="text" id="np-owner" placeholder="Owner (optional)"></div>'
+                + '<div class="note">Leave a date empty if it is not known - it stays "No date set" rather than guessed.</div>'
+                + '<div class="row"><label>Gas expiry <input type="date" id="np-gas"></label><label>Electrical expiry <input type="date" id="np-eicr"></label></div>'
+                + '<div class="row"><label>EPC <input type="date" id="np-epc"></label><label>Insurance <input type="date" id="np-insurance"></label></div>'
+                + '<div class="row"><label>Mortgage fixed deal ends <input type="date" id="np-mortgage"></label></div>'
+                + '<div class="row"><button class="primary" onclick="pj.addProperty()">Add property</button></div></div></details>';
             var pfOpen = (props.PORTFOLIO ? props.PORTFOLIO.items : []).some(function (i) { return !!S.rows[i]._pending; });
             h += '<details class="prop"' + (pfOpen ? ' open' : '') + '><summary>Whole portfolio</summary>';
             (props.PORTFOLIO ? props.PORTFOLIO.items : []).forEach(function (i) { h += jobHtml(i); });
@@ -320,3 +358,4 @@
         app.innerHTML = '<p class="status">Finishing Dropbox sign-in…</p>';
     }
 })();
+
